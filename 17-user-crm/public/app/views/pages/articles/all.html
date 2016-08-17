@@ -1,0 +1,49 @@
+<div class="page-header">
+<h1>
+Grupy
+<a href="/groups/create" class="btn btn-default">
+<span class="glyphicon glyphicon-plus"></span>
+Nowa Grupa
+</a>
+</h1>
+</div>
+<!-- LOADING MESSAGE -->
+<div class="jumbotron text-center" ng-show="article.processing">
+<span class="glyphicon glyphicon-repeat spinner"></span>
+<p>Ładowanie Grup...</p>
+</div>
+<div ng-show="article.articles">
+<table class="table table-bordered table-striped" ng-repeat="art in article.articles">
+<tbody>
+<!-- LOOP OVER THE ARTICLES -->
+<tr>
+<td>_id</td>
+<td>{{ art._id }}</td>
+</tr>
+<tr>
+<td>Tytuł</td>	
+<td>{{ art.title }}</td>
+</tr>
+<tr>
+<td>Opis</td>
+<td>{{ art.content }}</td>
+<tr>
+<td>Użytkownicy</td>
+<td><div ng-repeat="u in art.users"> {{ u.user }} </div></td>
+</tr>
+<!-- <tr>
+<td>mainUser</td>
+<td>{{ main.user.name }}</td>
+</tr> -->
+<!-- <td>{{ person.username }}</td> -->
+<tr>
+<td class="col-sm-1"></td>
+<td class="col-sm-2">
+<a ng-href="/groups/{{ art._id }}" class="btn btn-danger">Edytuj</a>
+<a href="#" ng-click=" article.deleteArticle(art._id)" class="btn btn-primary">Usuń</a>
+<a ng-href="#" class="btn btn-info">Przydziel użytkownika</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>

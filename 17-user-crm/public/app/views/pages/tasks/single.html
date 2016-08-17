@@ -1,0 +1,52 @@
+<div class="page-header">
+<h1 ng-if="task.type == 'create'">Utwórz Zadanie</h1>
+<h1 ng-if="task.type == 'edit'">Edytuj Zadanie</h1>
+</div>
+<form class="form-horizontal" ng-submit="task.saveTask()">
+<!-- <div class="form-group">
+<label class="col-sm-2 control-label">Name</label>
+<div class="col-sm-6">
+<input type="text"
+class="form-control"
+ng-model="article.articleData.name">
+</div>
+</div> -->
+<!--<hidden ng-model="article.articleData.username">{{main.user.name}}</hidden>-->
+</div>
+<div class="form-group">
+<label class="col-sm-2 control-label">Opis</label>
+<div class="col-text-6">
+<input type="text"
+class="form-control"
+ng-model="task.taskData.content">
+</div>
+</div>
+<div class="form-group">
+<label class="col-sm-2 control-label">Przydziel użytkowników</label>
+<!--<div class="col-text-6">
+<input type="text"
+class="form-control"
+ng-model="task.taskData.content">
+</div>-->
+<select name="singleSelect" ng-model="data.singleSelect">
+      <option value="option-1">Option 1</option>
+      <option value="option-2">Option 2</option>
+    </select>
+<div class="form-group">
+<div class="col-sm-offset-2 col-sm-6">
+<button type="submit"
+class="btn btn-success btn-lg btn-block"
+ng-if="task.type == 'create'">Utwórz Zadanie</button>
+<button type="submit"
+class="btn btn-success btn-lg btn-block"
+ng-if="task.type == 'edit'">Aktualizuj Zadanie</button>
+</div>
+</div>
+</form>
+<div class="row show-hide-message" ng-show="task.message">
+<div class="col-sm-6 col-sm-offset-2">
+<div class="alert alert-info">
+{{ task.message }}
+</div>
+</div>
+</div>

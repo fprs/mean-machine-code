@@ -1,5 +1,9 @@
+//
+var multer 	   = require('multer');
 var bodyParser = require('body-parser'); 	// get body-parser
 var User       = require('../models/user');
+var Article    = require('../models/article');
+var Task    = require('../models/task');
 var jwt        = require('jsonwebtoken');
 var config     = require('../../config');
 
@@ -9,33 +13,6 @@ var superSecret = config.secret;
 module.exports = function(app, express) {
 
 	var apiRouter = express.Router();
-
-	// route to generate sample user
-	apiRouter.post('/sample', function(req, res) {
-
-		// look for the user named chris
-		User.findOne({ 'username': 'chris' }, function(err, user) {
-
-			// if there is no chris user, create one
-			if (!user) {
-				var sampleUser = new User();
-
-				sampleUser.name = 'Chris';  
-				sampleUser.username = 'chris'; 
-				sampleUser.password = 'supersecret';
-
-				sampleUser.save();
-			} else {
-				console.log(user);
-
-				// if there is a chris, update his password
-				user.password = 'supersecret';
-				user.save();
-			}
-
-		});
-
-	});
 
 	// route to authenticate a user (POST http://localhost:8080/api/authenticate)
 	apiRouter.post('/authenticate', function(req, res) {
@@ -51,7 +28,7 @@ module.exports = function(app, express) {
 	    if (!user) {
 	      res.json({ 
 	      	success: false, 
-	      	message: 'Authentication failed. User not found.' 
+	      	message: 'Nie znaleziono użytkownika o podanej nazwie'//'Authentication failed. User not found.' 
 	    	});
 	    } else if (user) {
 
@@ -60,7 +37,7 @@ module.exports = function(app, express) {
 	      if (!validPassword) {
 	        res.json({ 
 	        	success: false, 
-	        	message: 'Authentication failed. Wrong password.' 
+	        	message: 'Błędne hasło.'//'Authentication failed. Wrong password.' 
 	      	});
 	      } else {
 
@@ -71,7 +48,15 @@ module.exports = function(app, express) {
 	        	username: user.username
 	        }, superSecret, {
 	          expiresIn: '24h' // expires in 24 hours
-	        });
+	        });	
+
+	        user.createUserSession(req, null, user, function (err) {
+        if (err) {
+          console.log("Error saving session: " + err);
+		        }
+		    });
+
+	        console.log("!@#$!@#!$#@!#!# req.session: "+req.session.user);
 
 	        // return the information including token as JSON
 	        res.json({
@@ -92,7 +77,7 @@ module.exports = function(app, express) {
 		console.log('Somebody just came to our app!');
 
 	  // check header or url parameters or post parameters for token
-	  var token = req.body.token || req.query.token || req.headers['x-access-token'];
+	  var token = req.body.token || req.param('token') || req.headers['x-access-token'];
 
 	  // decode token
 	  if (token) {
@@ -142,18 +127,20 @@ module.exports = function(app, express) {
 			user.name = req.body.name;  // set the users name (comes from the request)
 			user.username = req.body.username;  // set the users username (comes from the request)
 			user.password = req.body.password;  // set the users password (comes from the request)
+			user.surname = req.body.surname;  // set the users username (comes from the request)
+			user.email = req.body.email;  // set the users password (comes from the request)
 
 			user.save(function(err) {
 				if (err) {
 					// duplicate entry
 					if (err.code == 11000) 
-						return res.json({ success: false, message: 'A user with that username already exists. '});
+						return res.json({ success: false, message: 'Istnieje już użytkownik o podanej nazwie. '});
 					else 
 						return res.send(err);
 				}
 
 				// return a message
-				res.json({ message: 'User created!' });
+				res.json({ message: 'Nowy użytkownik został utworzony pomyślnie.' });
 			});
 
 		})
@@ -193,13 +180,15 @@ module.exports = function(app, express) {
 				if (req.body.name) user.name = req.body.name;
 				if (req.body.username) user.username = req.body.username;
 				if (req.body.password) user.password = req.body.password;
+				if (req.body.surname) user.surname = req.body.surname;
+				if (req.body.email) user.email = req.body.email;
 
 				// save the user
 				user.save(function(err) {
 					if (err) res.send(err);
 
 					// return a message
-					res.json({ message: 'User updated!' });
+					res.json({ message: 'Użytkownik został zedytowany.' });
 				});
 
 			});
@@ -210,6 +199,188 @@ module.exports = function(app, express) {
 			User.remove({
 				_id: req.params.user_id
 			}, function(err, user) {
+				if (err) res.send(err);
+
+				res.json({ message: 'Usunięto użytkownika.' });
+			});
+		});
+
+// on routes that end in /articles
+	// ----------------------------------------------------
+	apiRouter.route('/articles')
+
+		// create a article (accessed at POST http://localhost:8080/articles)
+		.post(function(req, res) {
+			// User.findById(req.params.user_id, function(err, user){
+			
+			var article = new Article();		// create a new instance of the Article model
+			article.title = req.body.title;  // set the articles name (comes from the request)
+			article.content = req.body.content;  // set the articles articlename (comes from the request)
+			// article.username = req.session.user.username;  // set the articles articlename (comes from the request)
+			
+			//article.user = req.main.user._id;	
+			console.log("ID: "+req.session);		
+			//article.password = req.body.password;  // set the articles password (comes from the request)
+
+
+			article.save(function(err) {
+				if (err) {
+					// duplicate entry
+					if (err.code == 11000) 
+						return res.json({ success: false, message: 'A article with that articlename already exists. '});
+					else 
+						return res.send(err);
+				}
+
+				// return a message
+				res.json({ message: 'Grupa została utworzona.' });
+			});
+		// });
+		})
+
+		// get all the article (accessed at GET http://localhost:8080/api/articles)
+		.get(function(req, res) {
+
+			Article.find({}, function(err, articles) {
+				if (err) res.send(err);
+
+				// return the articles
+				res.json(articles);
+			});
+		});
+
+	// on routes that end in /articles/:article_id
+	// ----------------------------------------------------
+	apiRouter.route('/articles/:article_id')
+
+		// get the article with that id
+		.get(function(req, res) {
+			Article.findById(req.params.article_id, function(err, article) {
+				if (err) res.send(err);
+
+				// return that article
+				res.json(article);
+			});
+		})
+
+		// update the article with this id
+		.put(function(req, res) {
+			Article.findById(req.params.article_id, function(err, article) {
+
+				if (err) res.send(err);
+
+				// set the new article information if it exists in the request
+				if (req.body.title) article.title = req.body.title;
+				if (req.body.content) article.content = req.body.content;
+				//if (req.body.password) article.password = req.body.password;
+
+				// save the article
+				article.save(function(err) {
+					if (err) res.send(err);
+
+					// return a message
+					res.json({ message: 'Grupa została zedytowana.' });
+				});
+
+			});
+		})
+
+		// delete the article with this id
+		.delete(function(req, res) {
+			Article.remove({
+				_id: req.params.article_id
+			}, function(err, article) {
+				if (err) res.send(err);
+
+				res.json({ message: 'Grupa została usunięta.' });
+			});
+		});
+
+
+// on routes that end in /tasks
+	// ----------------------------------------------------
+	apiRouter.route('/tasks')
+
+		// create a task (accessed at POST http://localhost:8080/tasks)
+		.post(function(req, res) {
+			// User.findById(req.params.user_id, function(err, user){
+			
+			var task = new Task();		// create a new instance of the Task model
+			task.content = req.body.content;  // set the tasks taskname (comes from the request)
+			task.finished = false;
+			// task.username = req.session.user.username;  // set the tasks taskname (comes from the request)
+			
+			//task.user = req.main.user._id;	
+			console.log("ID: "+req.session);		
+			//task.password = req.body.password;  // set the tasks password (comes from the request)
+
+
+			task.save(function(err) {
+				if (err) {
+					// duplicate entry
+					if (err.code == 11000) 
+						return res.json({ success: false, message: 'A task with that taskname already exists. '});
+					else 
+						return res.send(err);
+				}
+
+				// return a message
+				res.json({ message: 'Task created!' });
+			});
+		// });
+		})
+
+		// get all the task (accessed at GET http://localhost:8080/api/tasks)
+		.get(function(req, res) {
+
+			Task.find({}, function(err, tasks) {
+				if (err) res.send(err);
+
+				// return the tasks
+				res.json(tasks);
+			});
+		});
+
+	// on routes that end in /tasks/:task_id
+	// ----------------------------------------------------
+	apiRouter.route('/tasks/:task_id')
+
+		// get the task with that id
+		.get(function(req, res) {
+			Task.findById(req.params.task_id, function(err, task) {
+				if (err) res.send(err);
+
+				// return that task
+				res.json(task);
+			});
+		})
+
+		// update the task with this id
+		.put(function(req, res) {
+			Task.findById(req.params.task_id, function(err, task) {
+
+				if (err) res.send(err);
+
+				// set the new task information if it exists in the request
+				if (req.body.content) task.content = req.body.content;
+				//if (req.body.password) task.password = req.body.password;
+
+				// save the task
+				task.save(function(err) {
+					if (err) res.send(err);
+
+					// return a message
+					res.json({ message: 'Task updated!' });
+				});
+
+			});
+		})
+
+		// delete the task with this id
+		.delete(function(req, res) {
+			Task.remove({
+				_id: req.params.task_id
+			}, function(err, task) {
 				if (err) res.send(err);
 
 				res.json({ message: 'Successfully deleted' });

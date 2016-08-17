@@ -1,0 +1,50 @@
+<div class="page-header">
+<h1>
+Pliki
+<a href="/files/create" class="btn btn-default">
+<span class="glyphicon glyphicon-plus"></span>
+Nowy Plik
+</a>
+</h1>
+</div>
+<!-- LOADING MESSAGE -->
+<div class="jumbotron text-center" ng-show="file.processing">
+<span class="glyphicon glyphicon-repeat spinner"></span>
+<p>Ładowanie Plików...</p>
+</div>
+<div ng-show="file.files">
+<table class="table table-bordered table-striped" ng-repeat="fil in file.files">
+<tbody>
+<!-- LOOP OVER THE ARTICLES -->
+<tr>
+<td>_id</td>
+<td>{{ fil._id }}</td>
+</tr>
+<tr>
+<td>Czy ukończone?</td>	
+<td>{{ fil.finished }}</td>
+</tr>
+<tr>
+<td>Opis</td>
+<td>{{ fil.content }}</td>
+<tr>
+<td>Przypisani Użytkownicy</td>
+<td><div ng-repeat="u in fil.users"> {{ u.user }} </div></td>
+</tr>
+<!-- <tr>
+<td>mainUser</td>
+<td>{{ main.user.name }}</td>
+</tr> -->
+<!-- <td>{{ person.username }}</td> -->
+<tr>
+<td class="col-sm-1"></td>
+<td class="col-sm-2">
+<a ng-href="/files/{{ fil._id }}" class="btn btn-danger">Edytuj</a>
+<a href="#" ng-click=" file.deleteFile(fil._id)" class="btn btn-primary">Usuń</a>
+<a ng-href="#" class="btn btn-info">Przydziel użytkownika</a>
+<a ng-href="#" class="btn btn-success">Ukończ zadanie</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
